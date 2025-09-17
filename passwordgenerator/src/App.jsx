@@ -1,10 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 function App() {
   const [length, setLength] = useState(8);
   const [numAllowed, setNumAllowed] = useState(false);
   const [charAllowed, setCharAllowed] = useState(false);
   const [password, setPassword] = useState('');
+
+  // useRef hook:
+  const passwordRef = useRef(null);
 
   const passwordGenerator = useCallback(() => {
     let pass = '';
@@ -19,21 +22,36 @@ function App() {
     setPassword(pass);
   }, [length, numAllowed, charAllowed, setPassword]);
 
+  const copyPasswordToClipboard = useCallback(() => {
+    passwordRef.current?.select();
+    // passwordRef.current?.setSelectionRange(2, 6); // selects a particular range
+    window.navigator.clipboard.writeText(password);
+  }, [password])
+
+  useEffect(() => {
+    passwordGenerator();
+  }, [length, numAllowed, charAllowed, setPassword])
+
   return (
     <>
       <div
         className='w-full max-w-md mx-auto shadow-md rounded-lg p-4 pt-2 px-4 my-4  text-orange-500
       bg-gray-800'
       >
-        <h1 className='text-white text-center mt-1 mb-1'>Password Generator</h1>
+        <h1 className='text-white  text-center mt-1 mb-1'>Password Generator</h1>
         <div className='flex shadow rounded-lg overflow-hidden mb-1'>
           <input
             type='text'
             value={password}
             className='outline-none w-full py-1 px-3 bg-gray-500 rounded-lg'
             placeholder='password'
+            ref={passwordRef}
+            readOnly
           />
-          <button className='bg-orange-400 text-white rounded-lg ml-2 p-1'>
+          <button 
+          className='bg-orange-500 text-white rounded-lg ml-2 p-1'
+          onClick={copyPasswordToClipboard}
+          >
             copy
           </button>
         </div>
@@ -55,7 +73,7 @@ function App() {
             defaultChecked={numAllowed}
             id='numberInput'
             onChange={() => {
-              setNumAllowed((prev = !prev));
+              setNumAllowed((prev) => !prev);
             }}
             className='ml-2 '
           />
@@ -66,7 +84,7 @@ function App() {
             defaultChecked={charAllowed}
             id='charInput'
             onChange={() => {
-              setCharAllowed((prev = !prev));
+              setCharAllowed((prev) => !prev);
             }}
             className='ml-2 '
           />
